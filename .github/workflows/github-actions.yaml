@@ -6,7 +6,7 @@ jobs:
     steps:
       - name: Cache Node Modules
         id: cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: node_modules
           key: node-modules-cache
@@ -29,7 +29,7 @@ jobs:
         run: cd backend/build && zip -r artifact.zip ./ -x '*.git'
 
       - name: Store Artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: backend-artifact
           path: backend/build/artifact.zip
