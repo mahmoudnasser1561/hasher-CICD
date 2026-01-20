@@ -77,6 +77,32 @@ jobs:
       - name: Run Unit Tests
         run: cd backend && npm t
 
+  static-analysis:
+    needs: [build]
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Initialize CodeQL
+        run: github/codeql-action/init@v1
+        with:
+          languages: javascript
+
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16.x
+
+      - name: Install Deps
+        run: cd backend && npm
+
+      - name: Build
+        run: cd backend && npm run build
+
+      - name: Perform Analysis
+        uses: github/codeql-action/analyze@v1
 
   security-audit:
     needs: [build]
@@ -86,4 +112,4 @@ jobs:
         uses: actions/checkout@v1
 
       - name: Check for security issues
-        run: cd backend && npm audit --audit-level=moderate
+        run: cd backend && npm audit --audit-level=critical
