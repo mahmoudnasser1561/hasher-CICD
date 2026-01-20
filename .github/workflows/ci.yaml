@@ -86,7 +86,7 @@ jobs:
       - uses: actions/checkout@v1
 
       - name: Initialize CodeQL
-        run: github/codeql-action/init@v1
+        uses: github/codeql-action/init@v3
         with:
           languages: javascript
 
@@ -95,14 +95,15 @@ jobs:
         with:
           node-version: 16.x
 
-      - name: Install Deps
-        run: cd backend && npm
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: cd backend && npm i
 
       - name: Build
         run: cd backend && npm run build
 
       - name: Perform Analysis
-        uses: github/codeql-action/analyze@v1
+        uses: github/codeql-action/analyze@v3
 
   security-audit:
     needs: [build]
