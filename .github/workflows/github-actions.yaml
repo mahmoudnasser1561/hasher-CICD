@@ -1,0 +1,11 @@
+name: Continuos Integration (CI)
+on: [push]
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - run: cd backend && npm i
+      - run: cd backend && npm run build
