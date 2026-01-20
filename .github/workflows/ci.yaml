@@ -6,42 +6,52 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v1
+
       - name: Setup Node
         uses: actions/setup-node@v1
         with:
           node-version: 16.x
+
       - name: Cache Node Modules
         id: cache
         uses: actions/cache@v4
         with:
           path: backend/node_modules
           key: ${{ runner.os }}-node-modules-${{ hashFiles('backend/package-lock.json') }}
+
       - name: Install Deps
         if: steps.cache.outputs.cache-hit != 'true'
         run: cd backend && npm i
+
       - name: Build
         run: cd backend && npm run build
+
       - name: Generate Artifact
         run: cd backend/build && zip -r artifact.zip ./ -x '*.git'
+
       - name: Store Artifact
         uses: actions/upload-artifact@v4
         with:
           name: backend-artifact
           path: backend/build/artifact.zip
+
   lint:
     needs: [build]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v1
+
       - name: Cache Node Modules
         id: cache
         uses: actions/cache@v4
         with:
           path: backend/node_modules
           key: ${{ runner.os }}-node-modules-${{ hashFiles('backend/package-lock.json') }}
+
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: cd backend && npm i
+        
       - name: Lint the code
         run: cd backend && npm run lint
