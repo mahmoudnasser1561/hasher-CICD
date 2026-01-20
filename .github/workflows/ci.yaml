@@ -86,7 +86,7 @@ jobs:
       - uses: actions/checkout@v1
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4git pull
         with:
           languages: javascript
 
@@ -94,7 +94,7 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 16.x
-          
+
       - name: Cache Node Modules
         id: cache
         uses: actions/cache@v4
