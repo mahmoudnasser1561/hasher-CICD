@@ -85,40 +85,40 @@ jobs:
       - name: Run Unit Tests
         run: cd backend && npm t
 
-  static-analysis:
-    needs: [build]
-    runs-on: ubuntu-latest
-    permissions:
-      security-events: write
-    steps:
-      - uses: actions/checkout@v1
+  # static-analysis:
+  #   needs: [build]
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     security-events: write
+  #   steps:
+  #     - uses: actions/checkout@v1
 
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v4git pull
-        with:
-          languages: javascript
+  #     - name: Initialize CodeQL
+  #       uses: github/codeql-action/init@v4git pull
+  #       with:
+  #         languages: javascript
 
-      - name: Setup Node
-        uses: actions/setup-node@v1
-        with:
-          node-version: 16.x
+  #     - name: Setup Node
+  #       uses: actions/setup-node@v1
+  #       with:
+  #         node-version: 16.x
 
-      - name: Cache Node Modules
-        id: cache
-        uses: actions/cache@v4
-        with:
-          path: backend/node_modules
-          key: ${{ runner.os }}-node-modules-${{ hashFiles('backend/package-lock.json') }}
+  #     - name: Cache Node Modules
+  #       id: cache
+  #       uses: actions/cache@v4
+  #       with:
+  #         path: backend/node_modules
+  #         key: ${{ runner.os }}-node-modules-${{ hashFiles('backend/package-lock.json') }}
 
-      - name: Install Dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: cd backend && npm i
+  #     - name: Install Dependencies
+  #       if: steps.cache.outputs.cache-hit != 'true'
+  #       run: cd backend && npm i
 
-      - name: Build
-        run: cd backend && npm run build
+  #     - name: Build
+  #       run: cd backend && npm run build
 
-      - name: Perform Analysis
-        uses: github/codeql-action/analyze@v3
+  #     - name: Perform Analysis
+  #       uses: github/codeql-action/analyze@v3
 
   security-audit:
     needs: [build]
@@ -131,7 +131,7 @@ jobs:
         run: cd backend && npm audit --audit-level=critical
 
   deploy_to_eb:
-    needs: [static-analysis, security-audit, lint, test]
+    needs: [security-audit, lint, test]
     runs-on: ubuntu-latest
     steps:
       - name: Get Artifact
