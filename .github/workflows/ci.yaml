@@ -6,14 +6,7 @@ on:
       - main
     paths:
       - 'backend/**'
-      - 'cicd/backend.yml'
-      
-  pull_request:
-    branches:
-      - main
-    paths:
-      - 'backend/**'
-      - 'cicd/backend.yml'
+      - '.github/workflows/ci.yml'
 
 jobs:
   build:
