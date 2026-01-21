@@ -168,6 +168,6 @@ jobs:
       - name: Run Smoke Test
         run: |
           export BACKEND_URL=${{ secrets.BACKEND_URL }} 
-          cd e2e
+          cd ./backend/e2e
           chmod +x backend-smoke.sh
           ./backend-smoke.sh
