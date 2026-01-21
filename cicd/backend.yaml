@@ -1,0 +1,178 @@
+name: Backend
+on:
+  push:
+    path:
+      - 'backend/**'
+      - './cicd/backend.yml'
+    branches:
+      - main
+  pull_reqeusts:
+    path:
+      - 'backend/**'
+      - './cicd/backend.yml'
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16.x
+
+      - name: Cache Node Modules
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: backend/node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('backend/package-lock.json') }}
+
+      - name: Install Deps
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: cd backend && npm i
+
+      - name: Build
+        run: cd backend && npm run build
+
+      - name: Generate Artifact
+        run: cd backend/build && zip -r artifact.zip ./ -x '*.git'
+
+      - name: Store Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-artifact
+          path: backend/build/artifact.zip
+
+  lint:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Cache Node Modules
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: backend/node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('backend/package-lock.json') }}
+
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: cd backend && npm i
+
+      - name: Lint the code
+        run: cd backend && npm run lint
+
+  test:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Cache Node Modules
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: backend/node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('backend/package-lock.json') }}
+
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: cd backend && npm i
+        
+      - name: Run Unit Tests
+        run: cd backend && npm t
+
+  static-analysis:
+    needs: [build]
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4git pull
+        with:
+          languages: javascript
+
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16.x
+
+      - name: Cache Node Modules
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: backend/node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('backend/package-lock.json') }}
+
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: cd backend && npm i
+
+      - name: Build
+        run: cd backend && npm run build
+
+      - name: Perform Analysis
+        uses: github/codeql-action/analyze@v3
+
+  security-audit:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Check for security issues
+        run: cd backend && npm audit --audit-level=critical
+
+  deploy_to_eb:
+    needs: [static-analysis, security-audit, lint, test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get Artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: backend-artifact
+          path: backend/build
+
+      - name: Prepare ProcFile
+        run: |
+          echo "web: node server.js" > backend/build/Procfile
+
+      - name: Prepare Zip File
+        run: cd backend/build && ls && zip -r artifact.zip ./ -x '*.git''
+
+      - name: Deploy to EB
+        uses: einaregilsson/beanstalk-delpoy@v20
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: Hasher
+          environment_name: Hasher-env
+          version_label: Hasher-${{ github.run_number }}
+          region: us-east-1
+          deployment_package: backend/build/artifact.zip
+
+  verify-production:
+    runs-on: ubuntu-latest
+    needs: [deploy_to_eb]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Run Smoke Test
+        run: |
+          export BACKEND_URL=${{ secrets.BACKEND_URL }} 
+          cd e2e
+          chmod +x backend-smoke.sh
+          ./backend-smoke.sh
