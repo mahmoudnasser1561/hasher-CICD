@@ -135,7 +135,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Get Artifact
-        uses: actions/download-artifact@4
+        uses: actions/download-artifact@3
         with:
           name: backend-artifact
           path: backend/build
@@ -145,10 +145,10 @@ jobs:
           echo "web: node server.js" > backend/build/Procfile
 
       - name: Prepare Zip File
-        run: cd backend/build && ls && zip -r artifact.zip ./ -x '*.git''
+        run: cd backend/build && ls && zip -r artifact.zip ./ -x '*.git'
 
       - name: Deploy to EB
-        uses: einaregilsson/beanstalk-delpoy@v20
+        uses: einaregilsson/beanstalk-deploy@v22
         with:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
