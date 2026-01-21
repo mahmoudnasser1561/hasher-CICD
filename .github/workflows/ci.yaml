@@ -167,7 +167,7 @@ jobs:
 
       - name: Run Smoke Test
         run: |
-          export BACKEND_URL=${{ secrets.BACKEND_URL }} 
+          export BACKEND_URL=http://hasher-env.eba-2bhcapxu.us-east-1.elasticbeanstalk.com
           cd ./backend/e2e
           chmod +x backend-smoke.sh
           ./backend-smoke.sh
