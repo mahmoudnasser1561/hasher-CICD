@@ -163,11 +163,14 @@ jobs:
     needs: [deploy_to_eb]
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v4
 
       - name: Run Smoke Test
         run: |
-          export BACKEND_URL=http://hasher-env.eba-2bhcapxu.us-east-1.elasticbeanstalk.com/
-          cd ./backend/e2e
-          chmod +x backend-smoke.sh
-          ./backend-smoke.sh
+            export BACKEND_URL=http://hasher-env.eba-2bhcapxu.us-east-1.elasticbeanstalk.com
+            sleep 60 
+            ls -la
+            cd ./backend/e2e
+            ls -la
+            chmod +x backend-smoke.sh
+            ./backend-smoke.sh
