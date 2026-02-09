@@ -2,8 +2,6 @@
 
 # [![Continuous Integration (CI)](https://github.com/mahmoudnasser1561/hasher-CICD/actions/workflows/ci.yaml/badge.svg)](https://github.com/mahmoudnasser1561/hasher-CICD/actions/workflows/ci.yaml)
 
-A small backend **hashing service** + a production-style **CI/CD pipeline** built with **GitHub Actions** and deployed to **AWS Elastic Beanstalk**.
-
 > ⚠️ **Work in progress:** This project is actively evolving. The CI/CD flow works end-to-end today, but the infrastructure and deployment strategy will be improved (Terraform + Ansible + Blue/Green).
 
 ---
